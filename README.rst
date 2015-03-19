@@ -19,3 +19,8 @@ Contact
 ~~~~~~~
 
 Contact to the JUBE developer team: jube.jsc@fz-juelich.de
+
+License
+~~~~~~~
+
+JUBE itself is available under the GNU General Public License (GPL) version 3. Please check the readme file included in each JUBE configuration folder for a seperate configuration and source specific license.
