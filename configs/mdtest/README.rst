@@ -27,9 +27,8 @@ Comment
 * Preparation:
 
   1. Platform definition available?
-
-    * Predefined platforms are stored in '<JUBE-INST-PATH>/platform/'
-    * On 'unknown' systems this definition must be created first
+     Predefined platforms are stored in ``<JUBE-INST-PATH>/platform/``
+     On 'unknown' systems this definition must be created first
 
   2. Customize mdtest parameters to your demands
      !!!only the master XML file should be modified!!!
