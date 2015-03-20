@@ -36,6 +36,4 @@ Comment
      - !!!only the master XML file should be modified!!!
      - look in the 'specs' file for the defaults
 
-* Execute the mdtest/JUBE job
-
-     ``jube run mdtest-jube-master.xml --tag <platform>``
+* Execute the mdtest/JUBE job: ``jube run mdtest-jube-master.xml --tag <platform>``
