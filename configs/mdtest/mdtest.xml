@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jube xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="jube2.xsd">
-
-  <selection>
-    <only>mdtest</only>
-  </selection>
+<jube>
+  <!-- specify platform specific include file directories -->
   <include-path>
     <path tag="juqueen">../../platform/juqueen</path>
     <path tag="juropa2">../../platform/juropa2</path>
@@ -14,44 +10,46 @@
     <path tag="juniors">../../platform/juniors</path>
   </include-path>
 
-
-  <!-- global sets -->
-  
-  <!-- mdtest --> 
-
+  <!-- benchmark definition -->
   <benchmark name="mdtest" outpath="./benchmarks">
-
+    <!-- source data -->
     <fileset name="sources">
-      <copy>mdtest.tar.gz</copy>
-      <prepare>tar -xzf mdtest.tar.gz</prepare>
+      <copy>mdtest-1.9.3.tgz</copy>
+      <prepare>tar -xzf mdtest-1.9.3.tgz</prepare>
     </fileset>
 
+    <!-- compilation -->
+    <step name="compile">
+      <use>sources</use>
+      <use from="platform.xml">compileset</use>
+      <do>make CC.Linux='$mpi_cc -Wall' CC.Darwin='$mpi_cc -Wall'</do>
+    </step>
+
+    <!-- benchmark parameterization -->
     <parameterset name="mdtestParameter" init_with="mdtest_specs.xml">
-      <parameter name="filespertask" mode="python" type="int">int($totalfiles/$tasks)</parameter>
+      <parameter name="filespertask" mode="python" type="int">$totalfiles//$tasks</parameter>
       <parameter name="iterations" type="int" >3</parameter>
-      <parameter name="depth" type="int" >0,1,2</parameter>      
+      <parameter name="depth" type="int" >0,1,2</parameter>
       <parameter name="totalfiles" type="int" >16384</parameter>
-      <parameter name="totalfiles" type="int" tag='juniors'>4096</parameter>
+      <parameter name="totalfiles" type="int" tag="juniors">4096</parameter>
     </parameterset>
-    
+
+    <!-- system configuration -->
     <parameterset name="systemParameter" init_with="mdtest_specs.xml">
-      <parameter name="testdir" type="string" >$$WORK/mdtest/$jube_wp_id</parameter>
-      <parameter name="testdir" type="string" tag="deep">/work/zdv124/mdtest/$jube_wp_id</parameter>
-      <parameter name="testdir" type="string" tag="juniors">/gpfs/afmcache/source/mdtest/$jube_wp_id</parameter>
-      <parameter name="nodes" type="int" >4</parameter>  
-      <parameter name="taskspernode" type="int" >1,2,4,8</parameter>  
-      <parameter name="contactnode" type="string" tag="juniors">juniors6</parameter>
+      <parameter name="testdir">$$WORK/mdtest/$jube_wp_id</parameter>
+      <parameter name="testdir" tag="deep">/work/zdv124/mdtest/$jube_wp_id</parameter>
+      <parameter name="testdir" tag="juniors">/gpfs/afmcache/source/mdtest/$jube_wp_id</parameter>
+      <parameter name="nodes" type="int" >4</parameter>
+      <parameter name="taskspernode" type="int" >1,2,4,8</parameter>
+      <parameter name="contactnode" tag="juniors">juniors6</parameter>
       <parameter name="hostfile" tag="juniors">hostfile-juniors5+6+7+8</parameter>
       <parameter name="outlogfile">job.log</parameter>
       <parameter name="errlogfile">job.err</parameter>
     </parameterset>
 
-    <substituteset name="compilesub" init_with="platform.xml">
-      <iofile in="Makefile.jube" out="Makefile" />
-    </substituteset>
-    
+    <!-- job file substitution -->
     <substituteset name="executesub" init_with="platform.xml">
-      <sub source="#NOTIFY_EMAIL#" dest="st.graf@fz-juelich.de" />
+      <sub source="#NOTIFY_EMAIL#" dest="" />
       <sub source="#PREPROCESS#" dest="date +'(start) %F %T (%s)';mkdir -p ${testdir}" />
       <sub source="#PREPROCESS#" dest="date +'(start) %F %T (%s)';ssh $contactnode mkdir -p ${testdir}" tag="juniors" />
       <sub source="#POSTPROCESS#" dest="rm -rf ${testdir};date +'(finished) %F %T (%s)'" />
@@ -60,14 +58,8 @@
       <sub source="#EXECUTABLE#" dest="${jube_wp_abspath}/compile/mdtest" tag="juniors"/>
       <sub source="#ARGS_EXECUTABLE#" dest="-n $filespertask -z $depth -i $iterations -F -C -v -d ${testdir}" />
     </substituteset>
-        
-    <step name="compile">
-      <use>sources</use>
-      <use from="platform.xml">compileset</use>
-      <use>compilesub</use>
-      <do>make</do>
-    </step>
 
+    <!-- execution and job submission -->
     <step name="execute" depend="compile" shared="$shared_folder">
       <use from="platform.xml">executeset</use>
       <use>executesub</use>
@@ -81,6 +73,7 @@
       <do done_file="$done_file"></do>
     </step>
 
+    <!-- analyse -->
     <analyzer name="analyse">
       <use from="mdtest_specs.xml">pattern</use>
       <analyse step="execute">
@@ -88,6 +81,7 @@
       </analyse>
     </analyzer>
 
+    <!-- result creation -->
     <result>
       <use>analyse</use>
       <table name="result" style="pretty" sort="nodes,taskspernode">
@@ -103,7 +97,5 @@
         <column format=".3f">TCreateMean</column>
       </table>
     </result>
-
   </benchmark>
-
 </jube>
