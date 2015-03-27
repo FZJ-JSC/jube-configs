@@ -40,16 +40,12 @@ Included files
 Comment
 -------
 * Preparation:
-
-  1. Platform definition available?
-
-     - Predefined platforms are stored in ``<JUBE-INST-PATH>/platform/``
-     - On 'unknown' systems this definition must be created first
-
-  2. Customize ior parameters to your demands
-
-     - !!!only the master XML file should be modified!!!
-     - look in the 'specs' file for the defaults
+     - Platform definition available?
+         - Predefined platforms are stored in ``<JUBE-INST-PATH>/platform/``
+         - On 'unknown' systems this definition must be created first
+     - Customize ior parameters to your demands
+         - !!!only the master XML file should be modified!!!
+         - look in the 'specs' file for the defaults
 
 * Execute the ior/JUBE job: ``jube run ior.xml --tag <platform>``
      - Tag ``gpfs`` will enable GPFS support in IOR
