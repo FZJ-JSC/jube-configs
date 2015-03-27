@@ -22,6 +22,17 @@ Source
 * License: GPLv2
 * Comment: Copy ``mdtest-1.9.3.tgz`` into the same directory of mdtest.xml
 
+Included files
+--------------
++------------------+--------------------------------------------+
+| file name        | purpose                                    |
++==================+============================================+
+| mdtest.xml       | master XML file for the mdtest run in JUBE |
++------------------+--------------------------------------------+
+| mdtest_specs.xml | default specifications for the mdtest run  |
+|                  | is used by the master XML file             |
++------------------+--------------------------------------------+
+
 Comment
 -------
 * Preparation:
@@ -36,4 +47,4 @@ Comment
      - !!!only the master XML file should be modified!!!
      - look in the 'specs' file for the defaults
 
-* Execute the mdtest/JUBE job: ``jube run mdtest-jube-master.xml --tag <platform>``
+* Execute the mdtest/JUBE job: ``jube run mdtest.xml --tag <platform>``

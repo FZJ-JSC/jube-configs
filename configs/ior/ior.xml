@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jube>
+  <!-- specify platform specific include file directories -->
+  <include-path>
+    <path tag="juqueen">../../platform/juqueen</path>
+    <path tag="juropa2">../../platform/juropa2</path>
+    <path tag="juropatest">../../platform/juropatest</path>
+    <path tag="judge">../../platform/judge</path>
+    <path tag="deep">../../platform/deep</path>
+    <path tag="juniors">../../platform/juniors</path>
+  </include-path>
+
+  <!-- benchmark definition -->
+  <benchmark name="ior" outpath="./benchmarks">
+    <!-- source data -->
+    <fileset name="sources">
+      <copy tag="!bootstrap">ior.tar.gz</copy>
+      <prepare tag="!bootstrap">tar -xzf ior.tar.gz</prepare>
+      <copy tag="bootstrap">ior-3.0.1.tar.gz</copy>
+      <prepare tag="bootstrap">tar -xzf ior-3.0.1.tar.gz</prepare>
+      <prepare tag="bootstrap">mv ior-3.0.1/* .</prepare>
+      <prepare tag="bootstrap">./bootstrap</prepare>
+    </fileset>
+
+    <!-- remove gpfs dependencies -->
+    <substituteset name="no_gpfs" tag="!gpfs">
+      <iofile in="configure" out="configure" />
+      <sub source="gpfs.h gpfs_fcntl.h" dest="" />
+    </substituteset>
+
+    <!-- compilation -->
+    <step name="compile">
+      <use>sources</use>
+      <use from="platform.xml">compileset</use>
+      <use tag="!gpfs">no_gpfs</use>
+      <do tag="gpfs">LIBS=-lgpfs CC=$mpi_cc ./configure --with-posix --with-mpiio</do>
+      <do tag="!gpfs">CC=$mpi_cc ./configure --with-posix --with-mpiio</do>
+      <do>$make</do>
+    </step>
+
+    <!-- benchmark parameterization -->
+    <parameterset name="iorParameter" init_with="ior_specs.xml">
+      <parameter name="repetitions" type="int">3</parameter>
+      <parameter name="verbose" type="int">2</parameter>
+    </parameterset>
+
+    <!-- system configuration -->
+    <parameterset name="systemParameter" init_with="ior_specs.xml">
+      <parameter name="testdir">$$WORK/IOR/$jube_wp_id</parameter>
+      <parameter name="testdir" tag="deep">/work/zdv124/IOR/$jube_wp_id</parameter>
+      <parameter name="testdir" tag="juniors">/gpfs/afmcache/source/IOR/$jube_wp_id</parameter>
+      <parameter name="nodes" type="int">2,4</parameter>
+      <parameter name="taskspernode" type="int">1,2,4,8</parameter>
+      <parameter name="contactnode" tag="juniors">juniors6</parameter>
+      <parameter name="hostfile" tag="juniors">hostfile-juniors5+6+7+8</parameter>
+      <parameter name="outlogfile">job.log</parameter>
+      <parameter name="errlogfile">job.err</parameter>
+      <parameter name="queue" tag="deep">jube</parameter>
+    </parameterset>
+
+    <substituteset name="iorInputSub" init_with="ior_specs.xml" />
+
+    <!-- job file substitution -->
+    <substituteset name="executesub" init_with="platform.xml">
+      <sub source="#NOTIFY_EMAIL#" dest="" />
+      <sub source="#PREPROCESS#" dest="date +'(start) %F %T (%s)';mkdir -p ${testdir}" />
+      <sub source="#PREPROCESS#" dest="date +'(start) %F %T (%s)';ssh $contactnode mkdir -p ${testdir}" tag="juniors" />
+      <sub source="#POSTPROCESS#" dest="rm -rf ${testdir};date +'(finished) %F %T (%s)'" />
+      <sub source="#POSTPROCESS#" dest="ssh $contactnode rm -rf ${testdir};date +'(finished) %F %T (%s)'" tag="juniors" />
+      <sub source="#EXECUTABLE#" dest="compile/src/ior" />
+      <sub source="#EXECUTABLE#" dest="${jube_wp_abspath}/compile/mdtest" tag="juniors" />
+      <sub source="#ARGS_EXECUTABLE#" dest="-f ior_input.cfg -o ${testdir}" />
+    </substituteset>
+
+    <!-- execution and job submission -->
+    <step name="execute" depend="compile" shared="$shared_folder">
+      <use from="platform.xml">executeset</use>
+      <use>executesub</use>
+      <use from="platform.xml">chainsub</use>
+      <use>systemParameter</use>
+      <use>iorParameter</use>
+      <use>iorInputSub</use>
+      <use from="ior_specs.xml">iorInputFile</use>
+      <use from="platform.xml">jobfiles</use>
+      <use from="platform.xml">chainfiles</use>
+      <do>grep -v '^#' ior_input.out &gt; ior_input.cfg</do>
+      <do>$chainjob_script $shared_job_info $submit_script</do>
+      <do shared="true" active="$chainjob_needs_submit">$submit_chainjob</do>
+      <do done_file="$done_file"></do>
+    </step>
+
+    <!-- analyse -->
+    <analyzer name="analyse" >
+      <use from="ior_specs.xml">pattern</use>
+      <analyse step="execute">
+        <file>job.log</file>
+      </analyse>
+    </analyzer>
+
+    <!-- result creation -->
+    <result>
+      <use>analyse</use>
+      <table name="result" style="pretty" sort="nodes,taskspernode">
+        <column>nodes</column>
+        <column>taskspernode</column>
+        <column>tasks</column>
+        <column>API</column>
+        <column>Access</column>
+        <column>Aggregatesize</column>
+        <column>Blocksize</column>
+        <column>Taskoffsettype</column>
+        <column>Taskoffset</column>
+        <column>Totalclients</column>
+        <column>Clientspernode</column>
+        <column>Memorypernode</column>
+        <column>RDblock</column>
+        <column>RDbw</column>
+        <column>RDclose</column>
+        <column>RDopen</column>
+        <column>RDrd</column>
+        <column>RDtotal</column>
+        <column>RDxfer</column>
+        <column>RDbwmax_last</column>
+        <column>RDbwmean_last</column>
+        <column>RDbwmin_last</column>
+        <column>RDbmeans_last</column>
+        <column>RDbstddev_last</column>
+        <column>RDtpn_last</column>
+        <column>RDapi_last</column>
+        <column>REMremove</column>
+        <column>Repetitions</column>
+        <column>Testfn</column>
+        <column>WRblock</column>
+        <column>WRbw</column>
+        <column>WRclose</column>
+        <column>WRopen</column>
+        <column>WRtotal</column>
+        <column>WRwr</column>
+        <column>WRxfer</column>
+        <column>WRbwmax_last</column>
+        <column>WRbwmean_last</column>
+        <column>WRbwmin_last</column>
+        <column>WRbmeans_last</column>
+        <column>WRbstddev_last</column>
+        <column>WRtpn_last</column>
+        <column>WRapi_last</column>
+        <column>Xfersize</column>
+        <column>starttime</column>
+        <column>stoptime</column>
+      </table>
+    </result>
+  </benchmark>
+</jube>
