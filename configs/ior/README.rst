@@ -52,5 +52,4 @@ Comment
      - look in the 'specs' file for the defaults
 
 * Execute the ior/JUBE job: ``jube run ior.xml --tag <platform>``
-
      - Tag ``gpfs`` will enable GPFS support in IOR
