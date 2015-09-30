@@ -45,12 +45,12 @@
 
         <!-- system configuration -->
         <parameterset init_with="platform.xml" name="systemParameter">
-            <parameter name="nodes" type="int">2</parameter>
-            <parameter name="taskspernode" type="int">24</parameter>
+            <parameter name="nodes" type="int">1</parameter>
+            <parameter name="taskspernode" type="int">1</parameter>
             <parameter name="walltime">00:10:00</parameter>
             <parameter name="outlogfile">job.log</parameter>
             <parameter name="errlogfile">job.err</parameter>
-            <parameter name="mail">s.luehrs@fz-juelich.de</parameter>
+            <parameter name="mail"></parameter>
             <parameter name="executable">compile/${hpl_exec}</parameter>
             <parameter name="queue" tag="deep">jube</parameter>
             <parameter name="queue" tag="juropatest">devel</parameter>
