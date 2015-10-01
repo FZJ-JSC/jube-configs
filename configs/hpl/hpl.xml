@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jube>
+    <!-- specify platform specific include file directories -->
+    <include-path>
+        <path tag="juqueen">../../platform/juqueen</path>
+        <path tag="juropa2">../../platform/juropa2</path>
+        <path tag="juropatest">../../platform/juropatest</path>
+        <path tag="judge">../../platform/judge</path>
+        <path tag="deep">../../platform/deep</path>
+        <path tag="juniors">../../platform/juniors</path>
+    </include-path>
+
+    <!-- benchmark definition -->
+    <benchmark name="HPL" outpath="benchmarks">
+
+        <!-- source data -->
+        <fileset name="source">
+            <copy>hpl-2.1.tar.gz</copy>
+            <copy>Makefile.in</copy>
+            <prepare>tar -xzf hpl-2.1.tar.gz</prepare>
+            <prepare>mv hpl-2.1/* .</prepare>
+            <prepare>rmdir hpl-2.1</prepare>
+        </fileset>
+
+        <!-- compilation -->
+        <step name="compile">
+            <use from="hpl-specs.xml">hplSystemParameter</use>
+            <use>source</use>
+            <use from="platform.xml">compileset</use>
+            <use from="hpl-specs.xml">compilesub</use>
+            <do tag="juropatest">module load intel-para</do>
+            <do>make arch=${hpl_arch}</do>
+        </step>
+
+        <!-- benchmark parameterization -->
+        <parameterset name="hplParameter" init_with="hpl-specs.xml">
+            <parameter name="hpl_N" type="int">61488</parameter>
+            <parameter name="hpl_NB" type="int">168</parameter>
+            <parameter name="hpl_PQ" separator=";">(6,8)</parameter>
+            <parameter name="hpl_PFACT" type="int">2</parameter>
+            <parameter name="hpl_NBMIN" type="int">4</parameter>
+            <parameter name="hpl_RFACT" type="int">1</parameter>
+            <parameter name="hpl_BCAST" type="int">1</parameter>
+        </parameterset>
+
+        <!-- system configuration -->
+        <parameterset init_with="platform.xml" name="systemParameter">
+            <parameter name="nodes" type="int">1</parameter>
+            <parameter name="taskspernode" type="int">1</parameter>
+            <parameter name="walltime">00:10:00</parameter>
+            <parameter name="outlogfile">job.log</parameter>
+            <parameter name="errlogfile">job.err</parameter>
+            <parameter name="mail"></parameter>
+            <parameter name="executable">compile/${hpl_exec}</parameter>
+            <parameter name="queue" tag="deep">jube</parameter>
+            <parameter name="queue" tag="juropatest">devel</parameter>
+        </parameterset>
+
+        <!-- execution and job submission -->
+        <step name="execution" depend="compile">
+            <use from="hpl-specs.xml">hplInputFile</use>
+            <use from="hpl-specs.xml">hplInputFileSub</use>
+            <use>hplParameter</use>
+            <use>systemParameter</use>
+            <use from="platform.xml">executeset</use>
+            <use from="platform.xml">executesub</use>
+            <use from="platform.xml">jobfiles</use>
+            <do tag="juropatest">module load intel-para</do>
+            <do done_file="$done_file">$submit $submit_script</do>
+        </step>
+
+        <!-- analyse -->
+        <analyzer name="analyze">
+            <use from="hpl-specs.xml">pattern</use>
+            <analyse step="execution">
+                <file>job.log</file>
+            </analyse>
+        </analyzer>
+
+        <!-- result creation -->
+        <result>
+            <use>analyze</use>
+            <table name="result" style="pretty">
+                <column>nodes</column>
+                <column>taskspernode</column>
+                <column>pat_N</column>
+                <column>pat_Q</column>
+                <column>pat_P</column>
+                <column>pat_NB</column>
+                <column format=".3e">pat_perf_all</column>
+                <column format=".3e">pat_perf_avg_node</column>
+                <column>pat_time</column>
+            </table>
+        </result>
+    </benchmark>
+</jube>

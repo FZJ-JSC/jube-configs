@@ -15,6 +15,16 @@ Documentation
 
 The JUBE documentation can be found here: `JUBE documentation <http://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/JUBE/JUBE2/jube-documentation_node.html>`_
 
+Contribution
+~~~~~~~~~~~~
+
+We'd love you to contribute back to the *JUBE* configuration repository.
+
+1. Fork this repository on GitHub
+2. Add your personal *JUBE* configuration files into your personal branch. Please also add a short README 
+   providing additional information concerning your configuration.
+3. Create a pull request for your personal branch
+
 Contact
 ~~~~~~~
 
